@@ -1,0 +1,56 @@
+---
+interface Props {
+  totalAulas: number;
+}
+const { totalAulas } = Astro.props;
+---
+
+<!-- Progress card — atualizado via JS com localStorage -->
+<div class="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] p-6 sm:p-8">
+  <div class="flex items-center justify-between mb-4">
+    <span class="text-base font-semibold text-white">Progresso do curso</span>
+    <span id="progress-pct" class="text-base font-bold text-[#F5A623]">0%</span>
+  </div>
+
+  <!-- Barra de progresso -->
+  <div class="w-full h-3 rounded-full bg-[rgba(255,255,255,0.08)] overflow-hidden mb-3">
+    <div
+      id="progress-bar"
+      class="h-3 rounded-full bg-gradient-to-r from-[#F5A623] to-[#FF7A59] transition-all duration-500"
+      style="width: 0%"
+    ></div>
+  </div>
+
+  <p id="progress-label" class="text-sm text-[#b3b3b3]">
+    0 de {totalAulas} aulas concluídas
+  </p>
+</div>
+
+<script define:vars={{ totalAulas }}>
+  function updateProgress() {
+    const completed = JSON.parse(localStorage.getItem('hubspot-onboarding-progress') || '[]');
+    const count = completed.length;
+    const pct = Math.round((count / totalAulas) * 100);
+
+    const bar = document.getElementById('progress-bar');
+    const pctEl = document.getElementById('progress-pct');
+    const labelEl = document.getElementById('progress-label');
+
+    if (bar) bar.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (labelEl) labelEl.textContent = `${count} de ${totalAulas} aulas concluídas`;
+
+    // Atualiza os ícones de check em toda a página
+    document.querySelectorAll('[data-aula-slug]').forEach((el) => {
+      const slug = el.getAttribute('data-aula-slug');
+      if (slug && completed.includes(slug)) {
+        el.classList.add('completed');
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', updateProgress);
+  window.addEventListener('storage', updateProgress);
+  window.addEventListener('progress-updated', updateProgress);
+
+</script>

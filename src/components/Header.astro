@@ -1,0 +1,90 @@
+---
+const current = Astro.url.pathname;
+---
+
+<header class="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.08)] bg-[#151515]/90 backdrop-blur-md">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+
+    <!-- Logo -->
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="https://hagens.com.br/" target="_blank" rel="noopener noreferrer">
+        <img src="/logo.svg" alt="Hagens" class="h-6" />
+      </a>
+      <span class="text-[#b3b3b3]/40 font-light">×</span>
+      <a href="https://www.hubspot.com" target="_blank" rel="noopener noreferrer">
+        <img src="/hubspot-logo.svg" alt="HubSpot" class="h-7" />
+      </a>
+    </div>
+
+    <!-- Nav -->
+    <nav class="hidden sm:flex items-center gap-4"></nav>
+
+    <!-- Direita: nav + toggle -->
+    <div class="flex items-center gap-3">
+      <a
+        href="/"
+        class={`hidden sm:inline-flex text-xs uppercase tracking-widest font-light transition-colors ${current === '/' ? 'text-[#FF7A59]' : 'text-[#b3b3b3] hover:text-white'}`}
+      >
+        Visão geral
+      </a>
+
+      <!-- Toggle dark/light -->
+      <button
+        id="theme-toggle"
+        aria-label="Alternar tema"
+        class="flex items-center justify-center w-8 h-8 rounded-full border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] transition-colors"
+      >
+        <svg id="icon-sun" class="hidden w-4 h-4 text-[#F5A623]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+        </svg>
+        <svg id="icon-moon" class="w-4 h-4 text-[#b3b3b3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile menu button -->
+    <button id="menu-btn" class="sm:hidden rounded-md p-2 text-[#b3b3b3] hover:text-white transition-colors" aria-label="Menu">
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile nav -->
+  <nav id="mobile-menu" class="hidden sm:hidden border-t border-[rgba(255,255,255,0.08)] px-4 py-3">
+    <a href="/" class="block rounded-md px-3 py-2 text-xs uppercase tracking-widest text-[#b3b3b3] hover:text-white">Visão geral</a>
+  </nav>
+</header>
+
+<script>
+  // Menu mobile
+  const menuBtn = document.getElementById('menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  menuBtn?.addEventListener('click', () => menu?.classList.toggle('hidden'));
+
+  // Toggle dark/light
+  const themeBtn  = document.getElementById('theme-toggle');
+  const iconSun   = document.getElementById('icon-sun');
+  const iconMoon  = document.getElementById('icon-moon');
+
+  function applyTheme(theme: string) {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light');
+      iconSun?.classList.remove('hidden');
+      iconMoon?.classList.add('hidden');
+    } else {
+      document.documentElement.classList.remove('light');
+      iconSun?.classList.add('hidden');
+      iconMoon?.classList.remove('hidden');
+    }
+  }
+
+  applyTheme(localStorage.getItem('hubspot-theme') || 'dark');
+
+  themeBtn?.addEventListener('click', () => {
+    const next = document.documentElement.classList.contains('light') ? 'dark' : 'light';
+    localStorage.setItem('hubspot-theme', next);
+    applyTheme(next);
+  });
+</script>

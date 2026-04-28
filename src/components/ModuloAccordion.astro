@@ -1,0 +1,151 @@
+---
+interface Aula {
+  slug: string;
+  title: string;
+  aulaNum: string;
+  duracao?: string;
+  emBreve?: boolean;
+}
+
+interface Props {
+  numero: number;
+  label: string;
+  aulas: Aula[];
+  defaultOpen?: boolean;
+}
+
+const { numero, label, aulas, defaultOpen = true } = Astro.props;
+const accordionId = `modulo-${numero}`;
+const aulasDispo = aulas.filter(a => !a.emBreve);
+---
+
+<div class="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] overflow-hidden">
+  <!-- Header do módulo -->
+  <button
+    class="w-full flex items-center gap-4 px-5 sm:px-6 py-5 text-left hover:bg-[rgba(255,255,255,0.03)] transition-colors"
+    aria-expanded={defaultOpen ? "true" : "false"}
+    aria-controls={accordionId}
+    data-accordion-btn
+  >
+    <!-- Número -->
+    <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-xl bg-[#0d0d0d] border border-[rgba(255,255,255,0.10)] text-sm font-bold text-white">
+      {numero}
+    </span>
+
+    <!-- Título + contagem -->
+    <div class="flex-1 min-w-0">
+      <p class="font-semibold text-white text-base leading-snug">{label}</p>
+      <p class="text-xs text-[#b3b3b3] mt-0.5">
+        {aulas.length} aula{aulas.length !== 1 ? 's' : ''}
+        <span class="mx-1 opacity-40">·</span>
+        <span id={`count-${accordionId}`}>0/{aulasDispo.length} concluídas</span>
+      </p>
+    </div>
+
+    <!-- Chevron -->
+    <svg
+      class="shrink-0 h-4 w-4 text-[#b3b3b3] transition-transform duration-200"
+      data-chevron
+      fill="none" stroke="currentColor" viewBox="0 0 24 24"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+    </svg>
+  </button>
+
+  <!-- Lista de aulas -->
+  <div id={accordionId} class={defaultOpen ? '' : 'hidden'}>
+    {aulas.map((aula) => (
+      aula.emBreve ? (
+        /* Aula em breve — não clicável */
+        <div
+          class="flex items-center gap-4 px-5 sm:px-6 py-4 border-t border-[rgba(255,255,255,0.06)] opacity-50 cursor-not-allowed"
+        >
+          <!-- Ícone bloqueado -->
+          <span class="shrink-0 flex items-center justify-center w-6 h-6 rounded-full border border-[rgba(255,255,255,0.15)]">
+            <svg class="w-3 h-3 text-[#b3b3b3]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </span>
+
+          <!-- Título -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-[#b3b3b3]/60 leading-snug truncate">{aula.title}</p>
+          </div>
+
+          <!-- Badge Em breve -->
+          <span class="shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#b3b3b3]/50 border border-[rgba(255,255,255,0.10)] rounded-full px-2 py-0.5">
+            Em breve
+          </span>
+        </div>
+      ) : (
+        /* Aula disponível — clicável */
+        <a
+          href={`/aulas/${aula.slug}`}
+          class="flex items-center gap-4 px-5 sm:px-6 py-4 border-t border-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.03)] transition-colors group/item"
+          data-aula-slug={aula.slug}
+        >
+          <!-- Check icon -->
+          <span class="shrink-0 relative w-6 h-6">
+            <span class="check-pending absolute inset-0 flex items-center justify-center rounded-full border-2 border-[rgba(255,255,255,0.20)]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[rgba(255,255,255,0.20)]"></span>
+            </span>
+            <span class="check-done hidden absolute inset-0 flex items-center justify-center rounded-full bg-[#22C55E]">
+              <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+              </svg>
+            </span>
+          </span>
+
+          <!-- Título -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-white group-hover/item:text-[#FF7A59] transition-colors leading-snug truncate">
+              {aula.title}
+            </p>
+          </div>
+
+          <!-- Duração -->
+          {aula.duracao && (
+            <span class="shrink-0 text-xs text-[#b3b3b3]/60">{aula.duracao}</span>
+          )}
+        </a>
+      )
+    ))}
+  </div>
+</div>
+
+<script define:vars={{ accordionId, aulasDispoData: aulasDispo.map(a => a.slug), numero }}>
+  // Accordion toggle — escopo apenas no botão deste módulo
+  const btn = document.querySelector(`[aria-controls="${accordionId}"]`);
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(accordionId);
+      const chevron = btn.querySelector('[data-chevron]');
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+      if (target) target.classList.toggle('hidden', isOpen);
+      btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+      if (chevron) chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+    });
+  }
+
+  // Atualiza checkmarks
+  function updateChecks() {
+    const completed = JSON.parse(localStorage.getItem('hubspot-onboarding-progress') || '[]');
+    let doneCount = 0;
+    aulasDispoData.forEach((slug) => {
+      const el = document.querySelector(`[data-aula-slug="${slug}"]`);
+      if (!el) return;
+      const isDone = completed.includes(slug);
+      if (isDone) doneCount++;
+      const pending = el.querySelector('.check-pending');
+      const done = el.querySelector('.check-done');
+      if (pending) pending.classList.toggle('hidden', isDone);
+      if (done) done.classList.toggle('hidden', !isDone);
+    });
+    const countEl = document.getElementById(`count-modulo-${numero}`);
+    if (countEl) countEl.textContent = `${doneCount}/${aulasDispoData.length} concluídas`;
+  }
+
+  document.addEventListener('DOMContentLoaded', updateChecks);
+  window.addEventListener('storage', updateChecks);
+  window.addEventListener('progress-updated', updateChecks);
+</script>

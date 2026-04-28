@@ -1,0 +1,170 @@
+/* ─── Variáveis de tema ─── */
+:root {
+  --bg-base:      #151515;
+  --bg-card:      #1a1a1a;
+  --bg-subtle:    rgba(255,255,255,0.04);
+  --border:       rgba(255,255,255,0.08);
+  --border-card:  rgba(255,255,255,0.08);
+  --text-primary: #ffffff;
+  --text-muted:   #b3b3b3;
+  --text-dimmed:  rgba(179,179,179,0.5);
+}
+
+html.light {
+  --bg-base:      #f0f0f0;
+  --bg-card:      #ffffff;
+  --bg-subtle:    rgba(0,0,0,0.04);
+  --border:       rgba(0,0,0,0.08);
+  --border-card:  rgba(0,0,0,0.10);
+  --text-primary: #111111;
+  --text-muted:   #555555;
+  --text-dimmed:  rgba(80,80,80,0.6);
+}
+
+/* ─── Base ─── */
+html, body {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ─── Overrides modo claro — backgrounds ─── */
+html.light .bg-\[\#151515\]\/90 { background-color: rgba(245,245,245,0.95) !important; }
+html.light .bg-\[\#151515\]    { background-color: var(--bg-base) !important; }
+html.light .bg-\[\#1a1a1a\]   { background-color: #ffffff !important; }
+html.light .bg-\[\#141414\]   { background-color: #f0f0f0 !important; }
+html.light .bg-\[\#111\]      { background-color: #f5f5f5 !important; }
+html.light .bg-\[\#222\]      { background-color: #e0e0e0 !important; }
+html.light .bg-\[\#0d0d0d\]   { background-color: #ebebeb !important; }
+
+html.light .bg-\[rgba\(255\,255\,255\,0\.03\)\] { background-color: rgba(0,0,0,0.03) !important; }
+html.light .bg-\[rgba\(255\,255\,255\,0\.04\)\] { background-color: rgba(0,0,0,0.04) !important; }
+html.light .bg-\[rgba\(255\,255\,255\,0\.06\)\] { background-color: rgba(0,0,0,0.05) !important; }
+html.light .bg-\[rgba\(255\,255\,255\,0\.08\)\] { background-color: rgba(0,0,0,0.06) !important; }
+html.light .bg-\[rgba\(255\,255\,255\,0\.10\)\] { background-color: rgba(0,0,0,0.08) !important; }
+html.light .bg-\[rgba\(255\,255\,255\,0\.15\)\] { background-color: rgba(0,0,0,0.10) !important; }
+
+/* hover states */
+html.light .hover\:bg-\[rgba\(255\,255\,255\,0\.03\)\]:hover { background-color: rgba(0,0,0,0.04) !important; }
+html.light .hover\:bg-\[rgba\(255\,255\,255\,0\.08\)\]:hover { background-color: rgba(0,0,0,0.08) !important; }
+
+/* ─── Overrides modo claro — texto ─── */
+html.light .text-white                    { color: #111111 !important; }
+html.light .text-\[\#b3b3b3\]            { color: #555555 !important; }
+html.light .text-\[\#b3b3b3\]\/40        { color: rgba(0,0,0,0.25) !important; }
+html.light .text-\[\#b3b3b3\]\/50        { color: rgba(0,0,0,0.35) !important; }
+html.light .text-\[\#b3b3b3\]\/60        { color: rgba(0,0,0,0.45) !important; }
+
+/* grupo hover text */
+html.light .group-hover\/item\:text-\[\#FF7A59\]:hover { color: #FF7A59 !important; }
+
+/* ─── Overrides modo claro — bordas ─── */
+html.light .border-\[rgba\(255\,255\,255\,0\.06\)\] { border-color: rgba(0,0,0,0.07) !important; }
+html.light .border-\[rgba\(255\,255\,255\,0\.08\)\] { border-color: rgba(0,0,0,0.09) !important; }
+html.light .border-\[rgba\(255\,255\,255\,0\.10\)\] { border-color: rgba(0,0,0,0.12) !important; }
+html.light .border-\[rgba\(255\,255\,255\,0\.15\)\] { border-color: rgba(0,0,0,0.15) !important; }
+html.light .border-\[rgba\(255\,255\,255\,0\.20\)\] { border-color: rgba(0,0,0,0.20) !important; }
+
+/* ─── Overrides modo claro — check pending ─── */
+html.light .check-pending {
+  border-color: rgba(0,0,0,0.25) !important;
+}
+html.light .check-pending span {
+  background-color: rgba(0,0,0,0.20) !important;
+}
+
+/* ─── Overrides modo claro — página de aula ─── */
+
+/* Header da aula */
+html.light .bg-\[\#151515\]\/95 { background-color: rgba(245,245,245,0.95) !important; }
+html.light .bg-\[\#0a0a0a\]    { background-color: #f5f5f5 !important; }
+html.light .bg-\[\#0d0d0d\]    { background-color: #ececec !important; }
+
+/* Sidebar da aula */
+html.light aside { background-color: #f0f0f0 !important; border-color: rgba(0,0,0,0.08) !important; }
+html.light aside .bg-\[\#1a1a1a\] { background-color: #e0e0e0 !important; }
+
+/* Conteúdo da aula — lesson-content */
+html.light .lesson-content p          { color: #333333 !important; }
+html.light .lesson-content strong     { color: #000000 !important; }
+html.light .lesson-content ul li      { color: #333333 !important; background: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.07) !important; }
+html.light .lesson-content ol li      { color: #333333 !important; }
+html.light .lesson-content h2         { border-color: rgba(0,0,0,0.08) !important; }
+
+/* Área de info da aula */
+html.light .text-\[\#b3b3b3\]\/60 { color: rgba(0,0,0,0.45) !important; }
+html.light .text-\[\#b3b3b3\]\/50 { color: rgba(0,0,0,0.40) !important; }
+html.light .text-\[\#b3b3b3\]\/40 { color: rgba(0,0,0,0.30) !important; }
+html.light .text-\[\#b3b3b3\]\/30 { color: rgba(0,0,0,0.25) !important; }
+
+/* Progress bar track */
+html.light .bg-\[rgba\(255\,255\,255\,0\.10\)\] { background-color: rgba(0,0,0,0.10) !important; }
+
+/* Check pending na sidebar */
+html.light .check-pending { border-color: rgba(0,0,0,0.25) !important; }
+
+/* ─── Overrides modo claro — chatbot ─── */
+html.light #chat-window {
+  background-color: #ffffff !important;
+  border-color: rgba(0,0,0,0.10) !important;
+}
+html.light #chat-window .bg-\[\#141414\] {
+  background-color: #f5f5f5 !important;
+  border-color: rgba(0,0,0,0.08) !important;
+}
+html.light #chat-window .bg-\[\#222\] {
+  background-color: #efefef !important;
+}
+html.light #chat-window .bg-\[\#0d0d0d\] {
+  background-color: #f0f0f0 !important;
+  border-color: rgba(0,0,0,0.10) !important;
+}
+html.light #chat-window .bg-\[\#2a2a2a\] {
+  background-color: #e8e8e8 !important;
+  border-color: rgba(0,0,0,0.10) !important;
+}
+html.light #chat-window .text-\[\#e0e0e0\] { color: #111111 !important; }
+html.light #chat-window .text-white        { color: #111111 !important; }
+html.light #chat-window .text-\[\#b3b3b3\] { color: #555555 !important; }
+html.light #chat-window strong.text-white  { color: #000000 !important; }
+html.light #chat-window input { color: #111111 !important; }
+
+/* ─── Overrides modo claro — footer ─── */
+html.light footer {
+  background-color: #e8e8e8 !important;
+  border-color: rgba(0,0,0,0.07) !important;
+}
+
+/* ─── Overrides modo claro — header ─── */
+html.light header {
+  border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* ─── Overrides modo claro — divisor texto ─── */
+html.light .text-\[\#b3b3b3\]\/50 { color: rgba(0,0,0,0.35) !important; }
+html.light .bg-\[rgba\(255\,255\,255\,0\.06\)\] { background-color: rgba(0,0,0,0.08) !important; }
+
+/* Ilustração hero — modo claro */
+html.light .il-monitor  { fill: #e8e8e8 !important; stroke: rgba(0,0,0,0.10) !important; }
+html.light .il-topbar   { fill: #d4d4d4 !important; }
+html.light .il-sidebar  { fill: #dedede !important; }
+html.light .il-content  { fill: #f0f0f0 !important; }
+html.light .il-base     { fill: #e8e8e8 !important; stroke: rgba(0,0,0,0.08) !important; }
+html.light .il-item     { fill: rgba(0,0,0,0.10) !important; }
+html.light .il-overlay  { fill: rgba(0,0,0,0.05) !important; stroke: rgba(0,0,0,0.08) !important; }
+html.light .il-cursor   { fill: #333333 !important; }
+
+/* Logo Hagens preta no modo claro */
+html.light img[alt="Hagens"] {
+  filter: brightness(0);
+  transition: filter 0.3s ease;
+}
+
+/* Scrollbar oculta mas funcional */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

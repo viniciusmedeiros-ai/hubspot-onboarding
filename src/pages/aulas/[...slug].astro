@@ -1,0 +1,491 @@
+---
+import AulaLayout from '../../layouts/AulaLayout.astro';
+import VideoPlayer from '../../components/VideoPlayer.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const aulas = await getCollection('aulas');
+  // Gera rotas apenas para aulas disponíveis (não em breve)
+  return aulas
+    .filter(a => !a.data.emBreve)
+    .map(aula => ({
+      params: { slug: aula.slug },
+      props: { aula },
+    }));
+}
+
+const { aula } = Astro.props;
+const { Content } = await aula.render();
+
+const todasAulas = await getCollection('aulas');
+const aulasDisponiveis = todasAulas.filter(a => !a.data.emBreve);
+
+const modulos = [
+  { numero: 1, id: 'selling-series',   label: 'Selling Series' },
+  { numero: 2, id: 'servicing-series', label: 'Servicing Series' },
+  { numero: 3, id: 'getting-started',  label: 'CRM Setup' },
+  { numero: 4, id: 'marketing',        label: 'Marketing Hub' },
+  { numero: 5, id: 'sales',            label: 'Sales Hub' },
+  { numero: 6, id: 'service',          label: 'Service Hub' },
+];
+
+function getAulasModulo(moduloId: string) {
+  return todasAulas
+    .filter(a => a.data.modulo === moduloId)
+    .sort((a, b) => a.data.ordem - b.data.ordem);
+}
+
+// Próxima aula disponível
+const ordenadas = aulasDisponiveis.sort((a, b) => {
+  if (a.data.moduloNumero !== b.data.moduloNumero) return a.data.moduloNumero - b.data.moduloNumero;
+  return a.data.ordem - b.data.ordem;
+});
+const idxAtual = ordenadas.findIndex(a => a.slug === aula.slug);
+const proxAula = idxAtual < ordenadas.length - 1 ? ordenadas[idxAtual + 1] : null;
+
+const { title, modulo, moduloLabel, moduloNumero, aulaNum, duracao, descricao, videoFile, legendaFile, emBreve } = aula.data;
+const totalDisponiveis = aulasDisponiveis.length;
+const totalAulas = todasAulas.length;
+---
+
+<AulaLayout title={title} description={descricao}>
+
+  <!-- Header compacto -->
+  <header class="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.08)] bg-[#151515]/95 backdrop-blur-md">
+    <div class="flex items-center justify-between h-14 px-4 sm:px-6">
+      <div class="flex items-center gap-4">
+        <a href="/" class="flex items-center gap-2 text-white bg-[rgba(255,255,255,0.07)] hover:bg-[rgba(255,255,255,0.12)] border border-[rgba(255,255,255,0.10)] rounded-full px-3 py-1.5 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          <span class="text-xs font-medium hidden sm:inline">Voltar ao curso</span>
+        </a>
+        <span class="text-[#b3b3b3]/30 hidden sm:inline">|</span>
+        <div class="hidden sm:flex items-center gap-2">
+          <img src="/logo.svg" alt="Hagens" class="h-5" />
+          <span class="text-[#b3b3b3]/40 font-light">×</span>
+          <img src="/hubspot-logo.svg" alt="HubSpot" class="h-6" />
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="/" class="hidden sm:inline-flex items-center gap-2 text-white bg-[rgba(255,255,255,0.07)] hover:bg-[rgba(255,255,255,0.12)] border border-[rgba(255,255,255,0.10)] rounded-full px-3 py-1.5 transition-colors">
+          <span class="text-xs font-medium">Visão geral</span>
+        </a>
+        <span id="header-progress" class="text-xs text-[#b3b3b3]">0%</span>
+        <div class="w-24 h-1.5 rounded-full bg-[rgba(255,255,255,0.10)] overflow-hidden">
+          <div id="header-bar" class="h-full rounded-full bg-gradient-to-r from-[#F5A623] to-[#FF7A59] transition-all duration-500" style="width:0%"></div>
+        </div>
+        <!-- Toggle dark/light -->
+        <button id="theme-toggle" aria-label="Alternar tema" class="flex items-center justify-center w-8 h-8 rounded-full border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] transition-colors">
+          <svg id="icon-sun" class="hidden w-4 h-4 text-[#F5A623]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+          </svg>
+          <svg id="icon-moon" class="w-4 h-4 text-[#b3b3b3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout: vídeo + sidebar -->
+  <div class="flex flex-col lg:flex-row min-h-[calc(100vh-56px)]">
+
+    <!-- COLUNA DO VÍDEO -->
+    <main class="flex-1 min-w-0 flex flex-col">
+
+      <!-- Player -->
+      <div class="w-full bg-black">
+        {videoFile ? (
+          <VideoPlayer src={videoFile} legendaSrc={legendaFile} title={title} />
+        ) : (
+          <div class="w-full flex items-center justify-center bg-[#0a0a0a]" style="aspect-ratio:16/9">
+            <div class="text-center px-8">
+              <svg class="w-16 h-16 text-[#b3b3b3]/30 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <p class="text-white font-semibold mb-2">Vídeo disponível em breve</p>
+              <p class="text-sm text-[#b3b3b3]/60">Esta aula está sendo preparada e será disponibilizada em breve.</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <!-- Info da aula -->
+      <div class="px-5 sm:px-8 py-7 flex-1">
+
+        <p class="text-[10px] font-bold uppercase tracking-widest text-[#FF7A59] mb-3">
+          Módulo {moduloNumero} — {moduloLabel}
+        </p>
+
+        <h1 class="text-xl sm:text-2xl font-bold text-white leading-snug mb-2">{title}</h1>
+
+        <p class="text-xs text-[#b3b3b3]/60 mb-5">
+          Aula {aulaNum}
+          {duracao && <><span class="mx-1">·</span>{duracao}</>}
+        </p>
+
+        {descricao && (
+          <p class="text-sm text-[#b3b3b3] leading-relaxed mb-8 max-w-2xl">{descricao}</p>
+        )}
+
+        <!-- Ações -->
+        {videoFile && (
+          <div class="flex flex-wrap gap-3 mb-8">
+            <button
+              id="btn-concluir"
+              data-slug={aula.slug}
+              class="inline-flex items-center gap-2 rounded-full border border-[#22C55E] px-5 py-2 text-xs font-bold uppercase tracking-widest text-[#22C55E] hover:bg-[#22C55E] hover:text-white transition-all duration-300"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span id="btn-label">Marcar como concluída</span>
+            </button>
+
+            {proxAula && (
+              <a
+                href={`/aulas/${proxAula.slug}`}
+                class="inline-flex items-center gap-2 rounded-full border border-[#FF7A59] px-5 py-2 text-xs font-bold uppercase tracking-widest text-[#FF7A59] hover:bg-[#FF7A59] hover:text-white transition-all duration-300"
+              >
+                Próxima aula
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </a>
+            )}
+          </div>
+        )}
+
+        <!-- Conteúdo da aula -->
+        {Content && (
+          <div class="lesson-content max-w-2xl">
+            <Content />
+          </div>
+        )}
+      </div>
+    </main>
+
+    <!-- SIDEBAR -->
+    <aside class="w-full lg:w-[360px] xl:w-[400px] shrink-0 border-t lg:border-t-0 lg:border-l border-[rgba(255,255,255,0.08)] bg-[#0d0d0d] flex flex-col">
+
+      <div class="px-5 py-5 border-b border-[rgba(255,255,255,0.08)]">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-[#b3b3b3]/50 mb-1">Onboarding HubSpot</p>
+        <p class="text-sm font-semibold text-white mb-3">Programa de Parceria Hagens</p>
+        <div class="flex items-center gap-2">
+          <div class="flex-1 h-1.5 rounded-full bg-[rgba(255,255,255,0.10)] overflow-hidden">
+            <div id="sidebar-bar" class="h-full rounded-full bg-gradient-to-r from-[#F5A623] to-[#FF7A59] transition-all duration-500" style="width:0%"></div>
+          </div>
+          <span id="sidebar-pct" class="text-xs font-bold text-[#F5A623] shrink-0">0%</span>
+        </div>
+        <p id="sidebar-label" class="text-[10px] text-[#b3b3b3]/50 mt-1">0/{totalAulas} aulas concluídas</p>
+      </div>
+
+      <!-- Módulos na sidebar -->
+      <div class="flex-1 overflow-y-auto">
+        {modulos.map((mod) => {
+          const aulasModulo = getAulasModulo(mod.id);
+          return (
+            <div class="border-b border-[rgba(255,255,255,0.06)]">
+              <div class="flex items-center gap-3 px-5 py-4">
+                <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-[#1a1a1a] border border-[rgba(255,255,255,0.10)] text-xs font-bold text-white shrink-0">
+                  {mod.numero}
+                </span>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-semibold text-white leading-snug">{mod.label}</p>
+                  <p class="text-[10px] text-[#b3b3b3]/50 mt-0.5">{aulasModulo.length} aulas</p>
+                </div>
+              </div>
+
+              {aulasModulo.map((a) => {
+                const isAtual = a.slug === aula.slug;
+                const bloqueada = a.data.emBreve;
+
+                return bloqueada ? (
+                  <div class="flex items-center gap-3 px-5 py-3 border-l-2 border-transparent opacity-40">
+                    <span class="shrink-0 flex items-center justify-center w-5 h-5 rounded-full border border-[rgba(255,255,255,0.15)]">
+                      <svg class="w-2.5 h-2.5 text-[#b3b3b3]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                      </svg>
+                    </span>
+                    <p class="flex-1 min-w-0 text-xs text-[#b3b3b3]/50 truncate">{a.data.title}</p>
+                    <span class="shrink-0 text-[9px] text-[#b3b3b3]/40">Em breve</span>
+                  </div>
+                ) : (
+                  <a
+                    href={`/aulas/${a.slug}`}
+                    class={`flex items-center gap-3 px-5 py-3 transition-colors relative ${
+                      isAtual
+                        ? 'bg-[rgba(255,119,89,0.08)] border-l-2 border-[#FF7A59]'
+                        : 'hover:bg-[rgba(255,255,255,0.03)] border-l-2 border-transparent'
+                    }`}
+                    data-aula-slug={a.slug}
+                  >
+                    <span class="shrink-0 relative w-5 h-5">
+                      <span class="check-pending absolute inset-0 flex items-center justify-center rounded-full border border-[rgba(255,255,255,0.25)]"></span>
+                      <span class="check-done hidden absolute inset-0 flex items-center justify-center rounded-full bg-[#22C55E]">
+                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </span>
+                    </span>
+                    <p class={`flex-1 min-w-0 text-xs leading-snug truncate ${isAtual ? 'text-white font-semibold' : 'text-[#b3b3b3]'}`}>
+                      {a.data.title}
+                    </p>
+                    {a.data.duracao && (
+                      <span class="shrink-0 text-[10px] text-[#b3b3b3]/40">{a.data.duracao}</span>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </aside>
+  </div>
+
+</AulaLayout>
+
+<script define:vars={{ currentSlug: aula.slug, totalDisponiveis, totalAulas }}>
+  const STORAGE_KEY = 'hubspot-onboarding-progress';
+
+  function getCompleted() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  }
+
+  function saveCompleted(arr) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    window.dispatchEvent(new Event('progress-updated'));
+  }
+
+  function updateUI() {
+    const completed = getCompleted();
+    const count = completed.length;
+    const pct = Math.round((count / totalAulas) * 100);
+
+    const headerProgress = document.getElementById('header-progress');
+    const headerBar = document.getElementById('header-bar');
+    if (headerProgress) headerProgress.textContent = `${pct}%`;
+    if (headerBar) headerBar.style.width = pct + '%';
+
+    const sidebarBar = document.getElementById('sidebar-bar');
+    const sidebarPct = document.getElementById('sidebar-pct');
+    const sidebarLabel = document.getElementById('sidebar-label');
+    if (sidebarBar) sidebarBar.style.width = pct + '%';
+    if (sidebarPct) sidebarPct.textContent = pct + '%';
+    if (sidebarLabel) sidebarLabel.textContent = `${count}/${totalAulas} aulas concluídas`;
+
+    document.querySelectorAll('[data-aula-slug]').forEach((el) => {
+      const slug = el.getAttribute('data-aula-slug');
+      const isDone = completed.includes(slug);
+      const pending = el.querySelector('.check-pending');
+      const done = el.querySelector('.check-done');
+      if (pending) pending.classList.toggle('hidden', isDone);
+      if (done) done.classList.toggle('hidden', !isDone);
+    });
+
+    const btn = document.getElementById('btn-concluir');
+    const btnLabel = document.getElementById('btn-label');
+    if (btn && btnLabel) {
+      const isConcluida = completed.includes(currentSlug);
+      const base = 'inline-flex items-center gap-2 rounded-full border px-5 py-2 text-xs font-bold uppercase tracking-widest transition-all duration-300';
+      if (isConcluida) {
+        btn.className = base + ' border-[rgba(255,255,255,0.15)] text-[#b3b3b3] hover:border-white hover:text-white';
+        btnLabel.textContent = 'Concluída ✓';
+      } else {
+        btn.className = base + ' border-[#22C55E] text-[#22C55E] hover:bg-[#22C55E] hover:text-white';
+        btnLabel.textContent = 'Marcar como concluída';
+      }
+    }
+  }
+
+  document.getElementById('btn-concluir')?.addEventListener('click', () => {
+    const completed = getCompleted();
+    const idx = completed.indexOf(currentSlug);
+    if (idx === -1) completed.push(currentSlug);
+    else completed.splice(idx, 1);
+    saveCompleted(completed);
+    updateUI();
+  });
+
+  // Toggle dark/light
+  const themeBtn = document.getElementById('theme-toggle');
+  const iconSun  = document.getElementById('icon-sun');
+  const iconMoon = document.getElementById('icon-moon');
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light');
+      iconSun?.classList.remove('hidden');
+      iconMoon?.classList.add('hidden');
+    } else {
+      document.documentElement.classList.remove('light');
+      iconSun?.classList.add('hidden');
+      iconMoon?.classList.remove('hidden');
+    }
+  }
+
+  applyTheme(localStorage.getItem('hubspot-theme') || 'dark');
+
+  themeBtn?.addEventListener('click', () => {
+    const next = document.documentElement.classList.contains('light') ? 'dark' : 'light';
+    localStorage.setItem('hubspot-theme', next);
+    applyTheme(next);
+  });
+
+  document.addEventListener('DOMContentLoaded', updateUI);
+</script>
+
+<style is:global>
+  /* ── Conteúdo das aulas ── */
+  .lesson-content {
+    margin-top: 0.5rem;
+  }
+
+  .lesson-content h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #FF7A59;
+    margin-top: 2rem;
+    margin-bottom: 0.875rem;
+    padding-bottom: 0.625rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .lesson-content h2:first-child {
+    margin-top: 0;
+  }
+
+  /* Blockquote — aviso/nota */
+  .lesson-content blockquote {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: rgba(245,166,35,0.07);
+    border: 1px solid rgba(245,166,35,0.18);
+    border-radius: 0.75rem;
+    padding: 0.875rem 1rem;
+    margin: 0 0 1.75rem;
+    font-style: normal;
+  }
+
+  .lesson-content blockquote::before {
+    content: '★';
+    font-size: 0.625rem;
+    color: #F5A623;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .lesson-content blockquote p {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #c9a44a;
+    line-height: 1.6;
+  }
+
+  /* Listas não-ordenadas — com bullet laranja */
+  .lesson-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .lesson-content ul li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: #b3b3b3;
+    line-height: 1.65;
+    padding: 0.5rem 0.875rem;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 0.625rem;
+  }
+
+  .lesson-content ul li::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    min-width: 5px;
+    background: #FF7A59;
+    border-radius: 50%;
+    margin-top: 0.48rem;
+  }
+
+  /* Listas ordenadas — numeração circular laranja */
+  .lesson-content ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: step-counter;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .lesson-content ol li {
+    counter-increment: step-counter;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: #b3b3b3;
+    line-height: 1.65;
+    padding: 0.5rem 0.875rem 0.5rem 0;
+  }
+
+  .lesson-content ol li::before {
+    content: counter(step-counter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.375rem;
+    height: 1.375rem;
+    background: rgba(255,122,89,0.12);
+    border: 1px solid rgba(255,122,89,0.25);
+    color: #FF7A59;
+    border-radius: 50%;
+    font-size: 0.625rem;
+    font-weight: 700;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+  }
+
+  /* Parágrafos */
+  .lesson-content p {
+    font-size: 0.875rem;
+    color: #b3b3b3;
+    line-height: 1.7;
+    margin: 0 0 0.5rem;
+  }
+
+  /* Bold — labels dos detalhes do curso */
+  .lesson-content strong {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  /* Links */
+  .lesson-content a {
+    color: #FF7A59;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,122,89,0.3);
+    transition: border-color 0.2s;
+  }
+
+  .lesson-content a:hover {
+    border-color: #FF7A59;
+  }
+</style>
