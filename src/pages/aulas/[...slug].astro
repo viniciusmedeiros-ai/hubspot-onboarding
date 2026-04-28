@@ -3,21 +3,17 @@ import AulaLayout from '../../layouts/AulaLayout.astro';
 import VideoPlayer from '../../components/VideoPlayer.astro';
 import { getCollection } from 'astro:content';
 
-export async function getStaticPaths() {
-  const aulas = await getCollection('aulas');
-  // Gera rotas apenas para aulas disponíveis (não em breve)
-  return aulas
-    .filter(a => !a.data.emBreve)
-    .map(aula => ({
-      params: { slug: aula.slug },
-      props: { aula },
-    }));
+const { slug } = Astro.params;
+const todasAulasAll = await getCollection('aulas');
+const aula = todasAulasAll.find(a => a.slug === slug);
+
+if (!aula || aula.data.emBreve) {
+  return Astro.redirect('/');
 }
 
-const { aula } = Astro.props;
 const { Content } = await aula.render();
 
-const todasAulas = await getCollection('aulas');
+const todasAulas = todasAulasAll;
 const aulasDisponiveis = todasAulas.filter(a => !a.data.emBreve);
 
 const modulos = [

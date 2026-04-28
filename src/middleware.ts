@@ -6,6 +6,9 @@ const PUBLIC_PATHS = ['/login', '/auth/google', '/auth/callback', '/auth/logout'
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
+  // Bypass para desenvolvimento local
+  if (import.meta.env.DEV_BYPASS === 'true') return next();
+
   // Libera rotas públicas e assets estáticos
   if (
     PUBLIC_PATHS.some(p => pathname.startsWith(p)) ||

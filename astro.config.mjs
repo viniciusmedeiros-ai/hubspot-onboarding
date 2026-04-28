@@ -10,6 +10,7 @@ export default defineConfig({
     server: {
       fs: {
         allow: [
+          '/Users/viniciussilva/Teste v01/ccos-ratos/clientes/hubspot/onboarding-site',
           '/Users/viniciussilva/Teste v01/ccos-ratos/clientes/hubspot/onboarding-videos',
         ],
       },
